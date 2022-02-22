@@ -29,7 +29,7 @@ endif(CYGWIN)
 if(CMAKE_COMPILER_IS_GNUCC)
 # GCC opts.
   set(GKlib_COPTIONS "${GKlib_COPTIONS} -std=c99 -fno-strict-aliasing")
-  set(GKlib_COPTIONS "${GKlib_COPTIONS} -march=native")
+  #set(GKlib_COPTIONS "${GKlib_COPTIONS} -march=native")
   if(NOT MINGW)
       set(GKlib_COPTIONS "${GKlib_COPTIONS} -fPIC")
   endif(NOT MINGW)
@@ -95,6 +95,10 @@ endif(GKREGEX)
 if(GKRAND)
   set(GKlib_COPTIONS "${GKlib_COPTIONS} -DUSE_GKRAND")
 endif(GKRAND)
+
+if(GKRAND_SAVE_TRACE)
+  set(GKlib_COPTIONS "${GKlib_COPTIONS} -DGKRAND_SAVE_TRACE")
+endif(GKRAND_SAVE_TRACE)
 
 
 # Check for features.

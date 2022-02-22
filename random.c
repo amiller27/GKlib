@@ -10,18 +10,26 @@
 
 #include <GKlib.h>
 
+#define DEBUG_MKRANDOM 0
+
+#if DEBUG_MKRANDOM
+#define debug(...) printf(__VA_ARGS__)
+#else
+#define debug(...)
+#endif
+
 
 /*************************************************************************/
 /*! Create the various random number functions */
 /*************************************************************************/
-GK_MKRANDOM(gk_c,   size_t, char)
-GK_MKRANDOM(gk_i,   size_t, int)
-GK_MKRANDOM(gk_i32, size_t, int32_t)
-GK_MKRANDOM(gk_f,   size_t, float)
-GK_MKRANDOM(gk_d,   size_t, double)
-GK_MKRANDOM(gk_idx, size_t, gk_idx_t)
-GK_MKRANDOM(gk_z,   size_t, ssize_t)
-GK_MKRANDOM(gk_zu,  size_t, size_t)
+//GK_MKRANDOM(gk_c,   size_t, char)
+//GK_MKRANDOM(gk_i,   size_t, int)
+//GK_MKRANDOM(gk_i32, size_t, int32_t)
+//GK_MKRANDOM(gk_f,   size_t, float)
+//GK_MKRANDOM(gk_d,   size_t, double)
+//GK_MKRANDOM(gk_idx, size_t, gk_idx_t)
+//GK_MKRANDOM(gk_z,   size_t, ssize_t)
+//GK_MKRANDOM(gk_zu,  size_t, size_t)
 
 
 
@@ -82,6 +90,11 @@ void gk_randinit(uint64_t seed)
 }
 
 
+#if GKRAND_SAVE_TRACE
+static FILE* gk_random_trace_file = NULL;
+const char* gk_random_trace_filename = NULL;
+#endif
+
 /* generates a random number on [0, 2^64-1]-interval */
 uint64_t gk_randint64(void)
 {
@@ -117,11 +130,36 @@ uint64_t gk_randint64(void)
   x ^= (x << 37) & 0xFFF7EEE000000000ULL;
   x ^= (x >> 43);
 
-  return x & 0x7FFFFFFFFFFFFFFF;
+  uint64_t result = x & 0x7FFFFFFFFFFFFFFF;
 #else
-  return (uint64_t)(((uint64_t) rand()) << 32 | ((uint64_t) rand()));
+  uint64_t result = (uint64_t)(((uint64_t) rand()) << 32 | ((uint64_t) rand()));
 #endif
+
+#if GKRAND_SAVE_TRACE
+  if (gk_random_trace_file == NULL && gk_random_trace_filename != NULL) {
+    gk_random_trace_file = fopen(gk_random_trace_filename, "w");
+    if (gk_random_trace_file == NULL) {
+      errexit("Failed to open file \"%s\": %d\n", gk_random_trace_filename, errno);
+    }
+  }
+  debug("next_u64: %lu\n", result);
+  if (gk_random_trace_file != NULL) {
+    fprintf(gk_random_trace_file, "%lu\n", result);
+  }
+#endif
+
+  return result;
 }
+
+#if GKRAND_SAVE_TRACE
+void gk_random_flush_trace() {
+  if (gk_random_trace_file != NULL) {
+    fflush(gk_random_trace_file);
+    fclose(gk_random_trace_file);
+    gk_random_trace_file = NULL;
+  }
+}
+#endif
 
 /* generates a random number on [0, 2^32-1]-interval */
 uint32_t gk_randint32(void)

@@ -284,6 +284,10 @@ GK_MKRANDOM_PROTO(gk_zu,  size_t, size_t)
 void gk_randinit(uint64_t);
 uint64_t gk_randint64(void);
 uint32_t gk_randint32(void);
+#if GKRAND_SAVE_TRACE
+void gk_random_flush_trace();
+extern const char* gk_random_trace_filename;
+#endif
 
 
 /*-------------------------------------------------------------
